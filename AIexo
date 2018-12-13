@@ -1,0 +1,64 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class EnemyExo : MonoBehaviour
+{
+
+    public Transform Player;
+    public float maxDistance;
+    public float maxAngle;
+
+    private Animator ExoAnim;
+    // Use this for initialization
+    void Start()
+    {
+        ExoAnim = GetComponent<Animator>();
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+
+        Vector3 Direction = Player.position - transform.position; //sets a direction fro the enemy
+
+        float Angle = Vector3.Angle(Direction, transform.forward); //checks angle between line of sight of enemy and player
+
+        if (Vector3.Distance(Player.position, transform.position) < maxDistance && Angle < maxAngle && ExoAnim.GetBool("Dead") == false)
+        {
+            //Vector3 Direction = Player.position - transform.position;
+
+            transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(Direction), 1.0f);
+
+            ExoAnim.SetBool("Idle", false);
+
+            if (Direction.magnitude > 5)
+            {
+                transform.Translate(0, 0, 0.05f);
+                ExoAnim.SetBool("Walking", true);
+                ExoAnim.SetBool("Punching", false);
+            }
+            else
+            {
+                ExoAnim.SetBool("Walking", false);
+                ExoAnim.SetBool("Punching", true);
+            }
+        }
+        else
+        {
+            ExoAnim.SetBool("Idle", true);
+            ExoAnim.SetBool("Walking", false);
+            ExoAnim.SetBool("Punching", false);
+        }
+    }
+
+    void OnTriggerEnter(Collider other)
+    {
+        Debug.Log("Triggered " + other.gameObject.name);
+        if (other.gameObject.tag == "Bullet")
+        {
+            ExoAnim.SetBool("Dead", true);
+        }
+
+    }
+}
